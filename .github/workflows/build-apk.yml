@@ -31,7 +31,7 @@ jobs:
           set +o pipefail
           yes | sdkmanager --licenses --channel=3
           set -o pipefail
-          sdkmanager --channel=3 "platforms;android-37" "build-tools;37.0.0"
+          sdkmanager --channel=3 "platforms;android-37.0" "build-tools;37.0.0"
 
       - name: Create temporary debug signing key
         working-directory: SetAppFull
