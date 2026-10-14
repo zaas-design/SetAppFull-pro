@@ -47,6 +47,8 @@ jobs:
 
       - name: Build debug APK
         working-directory: SetAppFull
+        env:
+          SETAPPFULL_ROOT: ${{ github.workspace }}
         run: bash ./gradlew --no-daemon assembleDebug
 
       - name: Upload APK
