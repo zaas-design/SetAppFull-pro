@@ -46,12 +46,12 @@ val buildInfoTask = tasks.register<GenerateBuildInfo>("generateBuildInfo") {
 }
 android {
     namespace = "ss.colytitse.setappfull"
-    compileSdk = 37
-    buildToolsVersion = "37.0.0"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
     defaultConfig {
         applicationId = "io.github.tianxing226.setappfullpro.zuxos"
         minSdk = 30
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 207
         versionName = "2.0.7-zuxos1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
