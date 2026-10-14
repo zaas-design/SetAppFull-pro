@@ -49,11 +49,11 @@ android {
     compileSdk = 37
     buildToolsVersion = "37.0.0"
     defaultConfig {
-        applicationId = "io.github.tianxing226.setappfullpro"
+        applicationId = "io.github.tianxing226.setappfullpro.zuxos"
         minSdk = 30
         targetSdk = 37
-        versionCode = 206
-        versionName = "2.0.6"
+        versionCode = 207
+        versionName = "2.0.7-zuxos1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {

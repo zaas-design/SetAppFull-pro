@@ -15,22 +15,22 @@ internal fun <T> queryAppListAccess(
 ): AppListQueryResult<T> = try {
     if (!hasPermission()) {
         AppListQueryResult(AppListAccess.DENIED,
-            message = "系统尚未允许读取应用列表，请在系统应用设置中检查相关权限后重试。")
+            message = "App-list access has not been granted. Check the related permission in system settings and try again.")
     } else {
         val apps = query()
         if (apps.isEmpty()) {
             // Even the querying application itself should be visible on stock Android.
             AppListQueryResult(AppListAccess.ERROR,
-                message = "系统未返回应用列表，请检查系统应用设置后重试。")
+                message = "The system returned no apps. Check app-list access in system settings and try again.")
         } else {
             AppListQueryResult(AppListAccess.READY, apps,
-                "已可读取系统允许显示的应用列表。")
+                "The apps allowed by the system are available.")
         }
     }
 } catch (_: SecurityException) {
     AppListQueryResult(AppListAccess.DENIED,
-        message = "系统拒绝读取应用列表，请在系统应用设置中检查相关权限后重试。")
+        message = "The system denied app-list access. Check the related permission in system settings and try again.")
 } catch (failure: Exception) {
     AppListQueryResult(AppListAccess.ERROR,
-        message = "读取应用列表失败（${failure.javaClass.simpleName}），请稍后重试。")
+        message = "Could not read the app list (${failure.javaClass.simpleName}). Try again later.")
 }

@@ -165,6 +165,13 @@ final class WindowSession implements ViewTreeObserver.OnGlobalLayoutListener,
         else requestedVisibleBars &= ~bars;
     }
 
+    int filterVisibleBarRequest(int types) {
+        // Apply the active app's rule before the platform sees show(). A queued hide leaves a
+        // visible frame between repeated app requests (as VK does), causing the status bar to
+        // oscillate. Other insets, including the IME, pass through unchanged.
+        return types & ~controlledBarTypes;
+    }
+
     void observeBehaviorRequest(int behavior) {
         originalBarBehavior = behavior;
     }

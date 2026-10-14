@@ -417,19 +417,32 @@ public final class FullscreenModule extends XposedModule {
             Method method = type.getMethod(name, int.class);
             if (Modifier.isAbstract(method.getModifiers()) || !observedMethods.add(method)) return;
             hook(method).intercept(chain -> {
-                Object result = chain.proceed();
-                if (!moduleMutation.get() && Looper.myLooper() == Looper.getMainLooper()) {
-                    WeakReference<WindowSession> reference = controllers.get(chain.getThisObject());
-                    WindowSession session = reference == null ? null : reference.get();
-                    if (session != null) {
-                        if (name.equals("setSystemBarsBehavior")) session.observeBehaviorRequest((Integer) chain.getArg(0));
-                        else session.observeBarRequest((Integer) chain.getArg(0), name.equals("show"));
-                        // The target may immediately show a bar after our hide call. Queue a
-                        // correction even when the configured rule itself has not changed.
-                        session.scheduleApply();
-                    }
+                if (moduleMutation.get() || Looper.myLooper() != Looper.getMainLooper()) {
+                    return chain.proceed();
                 }
-                // Observation only: do not suppress system gestures or an app's IME requests.
+                WeakReference<WindowSession> reference = controllers.get(chain.getThisObject());
+                WindowSession session = reference == null ? null : reference.get();
+                if (session == null) return chain.proceed();
+
+                int requested = (Integer) chain.getArg(0);
+                if (name.equals("setSystemBarsBehavior")) {
+                    Object result = chain.proceed();
+                    session.observeBehaviorRequest(requested);
+                    session.scheduleApply();
+                    return result;
+                }
+
+                boolean show = name.equals("show");
+                session.observeBarRequest(requested, show);
+                if (show) {
+                    int filtered = session.filterVisibleBarRequest(requested);
+                    if (filtered == 0) return null;
+                    if (filtered != requested) return chain.proceed(new Object[]{filtered});
+                }
+                Object result = chain.proceed();
+                // A target may immediately show a bar after our hide call. Queue a correction
+                // even when the configured rule itself has not changed.
+                session.scheduleApply();
                 return result;
             });
         } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {

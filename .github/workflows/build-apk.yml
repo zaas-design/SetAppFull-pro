@@ -1,0 +1,53 @@
+name: Build Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          set +o pipefail
+          yes | sdkmanager --licenses
+          set -o pipefail
+          sdkmanager "platforms;android-37" "build-tools;37.0.0"
+
+      - name: Create temporary debug signing key
+        working-directory: SetAppFull
+        run: |
+          mkdir -p ../signing
+          keytool -genkeypair -v \
+            -keystore ../signing/debug.keystore \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US" \
+            -keyalg RSA -keysize 2048 -validity 10000 -noprompt
+
+      - name: Build debug APK
+        working-directory: SetAppFull
+        run: bash ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SetAppFull-ZUXOS-${{ github.sha }}
+          path: SetAppFull/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14

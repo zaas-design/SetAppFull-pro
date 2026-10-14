@@ -49,7 +49,7 @@ class AppRepository(private val app: Application) {
                     Log.w("SetAppFull", "Operation failed: ${failure.javaClass.simpleName}")
                     mutableState.value = mutableState.value.copy(
                         loading = false,
-                        error = "操作未完成（${failure.javaClass.simpleName}），请重试。未同步的设置会保留在本机。",
+                        error = "Action failed (${failure.javaClass.simpleName}). Try again. Unsynced settings remain on this device.",
                     )
                 }
             }
@@ -69,7 +69,7 @@ class AppRepository(private val app: Application) {
                     mutableState.value = mutableState.value.copy(
                         frameworkName = "", frameworkVersion = "", frameworkApi = null,
                         status = FrameworkStatus.DISCONNECTED,
-                        statusMessage = "框架连接已断开，请检查模块状态后重新打开应用。",
+                        statusMessage = "Framework connection lost. Check the module status and reopen the app.",
                     )
                     rebuildRows(null)
                 }
@@ -82,7 +82,7 @@ class AppRepository(private val app: Application) {
                 if (service == null && mutableState.value.status == FrameworkStatus.CHECKING) {
                     mutableState.value = mutableState.value.copy(
                         status = FrameworkStatus.UNAVAILABLE,
-                        statusMessage = "未连接框架服务，请在 LSPosed 中启用本模块后重新打开。",
+                        statusMessage = "Framework service is not connected. Enable this module in LSPosed and reopen the app.",
                     )
                 }
             }
@@ -132,8 +132,8 @@ class AppRepository(private val app: Application) {
                 frameworkVersion = "${current.frameworkVersion} (${current.frameworkVersionCode})",
                 frameworkApi = api,
                 status = if (supported) FrameworkStatus.CONNECTED else FrameworkStatus.UNSUPPORTED,
-                statusMessage = if (supported) "框架服务已连接；目标应用的加载与全屏效果仍需分别核验。"
-                    else "当前框架不支持 API 101 或远程配置，暂不能同步规则。",
+                statusMessage = if (supported) "Framework connected. Verify module loading and fullscreen behavior in each target app."
+                    else "This framework does not support API 101 or remote preferences, so rules cannot be synced.",
                 error = null,
             )
             // Query scope before acknowledging a reset: implicit scoped defaults also need off
@@ -154,8 +154,8 @@ class AppRepository(private val app: Application) {
             mutableState.value = mutableState.value.copy(
                 frameworkName = "", frameworkVersion = "", frameworkApi = null,
                 status = FrameworkStatus.DISCONNECTED,
-                statusMessage = "框架通信失败，请检查模块状态后点击刷新重试。",
-                error = "配置未确认同步；本地规则仍保留。",
+                statusMessage = "Framework communication failed. Check the module status, then refresh to try again.",
+                error = "Sync is not confirmed. Local rules are preserved.",
             )
             Log.w("SetAppFull", "Framework refresh failed: ${failure.javaClass.simpleName}")
             rebuildRows(null)
@@ -344,7 +344,7 @@ class AppRepository(private val app: Application) {
         appListNeedsRefresh = false
         mutableState.value = mutableState.value.copy(
             appListAccess = AppListAccess.CHECKING,
-            appListAccessMessage = "正在检查应用列表访问权限。",
+            appListAccessMessage = "Checking app-list access.",
         )
         val pm = app.packageManager
         // QUERY_ALL_PACKAGES is a normal, install-time permission on Android. Calling
@@ -393,23 +393,23 @@ class AppRepository(private val app: Application) {
                     pending == ScopeRequestPolicy.REQUESTED,
                 usesScopeDefault = !explicit && scope?.contains(row.packageName) == true,
                 syncMessage = when {
-                    dirty -> "已保存到本机，待连接框架同步"
+                    dirty -> "Saved on this device; waiting to sync with the framework"
                     explicit && flags and (RuleCodec.ENABLED or RuleCodec.ALLOW_SCREENSHOT or
-                        RuleCodec.COMPAT_NETWORK_ENVIRONMENT) == 0 -> "全屏控制已关闭"
-                    pending == ScopeRequestPolicy.REQUESTED -> "等待授权：请确认框架通知中的作用域申请"
-                    pending == ScopeRequestPolicy.QUEUED -> "已保存，等待框架连接后申请作用域"
-                    pending == ScopeRequestPolicy.NEEDS_RETRY -> "授权未确认；可重试或在框架作用域中勾选"
+                        RuleCodec.COMPAT_NETWORK_ENVIRONMENT) == 0 -> "Fullscreen control is off"
+                    pending == ScopeRequestPolicy.REQUESTED -> "Waiting for approval: accept the scope request in the framework notification"
+                    pending == ScopeRequestPolicy.QUEUED -> "Saved; scope request will be sent when the framework connects"
+                    pending == ScopeRequestPolicy.NEEDS_RETRY -> "Approval not confirmed. Retry or select the app in the framework scope"
                     !explicit && scope == null && !pendingReset ->
-                        if (row.packageName in lastScope) "上次使用作用域默认规则；当前连接与效果待确认"
-                        else "未配置规则；等待框架连接确认作用域"
+                        if (row.packageName in lastScope) "Using the previous scope default; connection and behavior need verification"
+                        else "No rule configured; waiting for the framework to confirm scope"
                     flags and (RuleCodec.ENABLED or RuleCodec.ALLOW_SCREENSHOT or
-                        RuleCodec.COMPAT_NETWORK_ENVIRONMENT) == 0 -> "全屏控制已关闭"
-                    !explicit && scope?.contains(row.packageName) == true -> "默认沉浸式已准备；重启目标应用后检查效果"
-                    flags and 1 == 0 -> "未启用全屏控制"
-                    remote == null -> "规则尚未同步，等待框架连接"
-                    scope == null -> "作用域与加载状态待验证"
-                    row.packageName !in scope -> "尚未加入框架作用域"
-                    else -> "规则已同步；重启目标应用后核验效果"
+                        RuleCodec.COMPAT_NETWORK_ENVIRONMENT) == 0 -> "Fullscreen control is off"
+                    !explicit && scope?.contains(row.packageName) == true -> "Default immersive mode is ready. Restart the target app and check the result"
+                    flags and 1 == 0 -> "Fullscreen control is not enabled"
+                    remote == null -> "Rule not synced; waiting for framework connection"
+                    scope == null -> "Scope and module loading need verification"
+                    row.packageName !in scope -> "Not included in the framework scope"
+                    else -> "Rule synced. Restart the target app and verify the result"
                 },
             )
         }

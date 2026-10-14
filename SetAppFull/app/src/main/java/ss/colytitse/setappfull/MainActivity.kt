@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                             } catch (_: RuntimeException) {
                                 permissionRequestLaunched = false
                                 Toast.makeText(this@MainActivity,
-                                    "无法打开系统权限窗口，请在系统应用设置中检查应用列表权限。",
+                                    "Could not open the system permission dialog. Check app-list access in system settings.",
                                     Toast.LENGTH_SHORT).show()
                                 finishPermissionRequest()
                             }
@@ -126,14 +126,14 @@ class MainActivity : ComponentActivity() {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/tiaxcj")))
         } catch (_: ActivityNotFoundException) {
-            Toast.makeText(this, "请安装浏览器或 Telegram 后再打开群聊链接。", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Install a browser or Telegram to open the community link.", Toast.LENGTH_LONG).show()
         } catch (_: SecurityException) {
-            Toast.makeText(this, "系统未允许打开链接，请访问 t.me/tiaxcj。", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "The system could not open the link. Visit t.me/tiaxcj.", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun showSettingsUnavailable() {
-        Toast.makeText(this, "无法打开系统应用设置，请手动在系统设置中找到本应用。", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Could not open app settings. Find this app manually in system settings.", Toast.LENGTH_SHORT).show()
     }
 
     private companion object {

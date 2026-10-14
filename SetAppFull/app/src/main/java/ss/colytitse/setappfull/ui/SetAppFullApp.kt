@@ -115,7 +115,7 @@ fun SetAppFullApp(
                 Column(Modifier.widthIn(max = 900.dp).fillMaxSize()) {
                     Header(onRefresh)
                     if (permissionRequestInProgress) {
-                        Text("需要读取已安装应用，才能选择要设置全屏的应用；请在系统权限窗口中选择。",
+                        Text("Allow app-list access to choose which apps to configure. Select Allow in the system permission dialog.",
                             Modifier.padding(horizontal = 24.dp, vertical = 8.dp).testTag("app_access_purpose"),
                             style = MaterialTheme.typography.bodyMedium)
                     }
@@ -137,16 +137,16 @@ fun SetAppFullApp(
             AlertDialog(
                 onDismissRequest = { accessNoticeDismissed = true },
                 modifier = Modifier.testTag("app_access_dialog"),
-                title = { Text("需要检查应用列表访问") },
+                title = { Text("App-list access required") },
                 text = { Text(state.appListAccessMessage) },
                 confirmButton = {
                     TextButton(onClick = {
                         accessNoticeDismissed = true
                         onOpenAppSettings()
-                    }) { Text("打开权限设置") }
+                    }) { Text("Open permission settings") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { accessNoticeDismissed = true }) { Text("稍后处理") }
+                    TextButton(onClick = { accessNoticeDismissed = true }) { Text("Not now") }
                 },
             )
         }
@@ -163,15 +163,15 @@ fun SetAppFullApp(
             AlertDialog(
                 onDismissRequest = { pendingScreenshotPackage = null },
                 modifier = Modifier.testTag("screenshot_confirm_dialog"),
-                title = { Text("允许「${pendingScreenshotApp.label}」截屏？") },
-                text = { Text("只对当前应用生效。DRM、银行、安全页面或硬件保护内容仍可能无法截屏；请仅用于你有权操作的应用和内容。关闭后会恢复该应用原有的安全窗口行为。") },
+                title = { Text("Allow screenshots in “${pendingScreenshotApp.label}”?") },
+                text = { Text("Applies only to this app. DRM, banking, secure pages, and hardware-protected content may still block screenshots. Use only with apps and content you are authorized to capture. Turning this off restores the app’s original secure-window behavior.") },
                 confirmButton = {
                     TextButton(onClick = {
                         pendingScreenshotPackage = null
                         onRuleChange(pendingScreenshotApp.packageName, RuleCodec.ALLOW_SCREENSHOT, true)
-                    }, modifier = Modifier.testTag("confirm_screenshot")) { Text("允许截屏") }
+                    }, modifier = Modifier.testTag("confirm_screenshot")) { Text("Allow screenshots") }
                 },
-                dismissButton = { TextButton(onClick = { pendingScreenshotPackage = null }) { Text("取消") } },
+                dismissButton = { TextButton(onClick = { pendingScreenshotPackage = null }) { Text("Cancel") } },
             )
         }
         val pendingSystemApp = state.apps.firstOrNull { it.packageName == pendingSystemPackage }
@@ -179,27 +179,27 @@ fun SetAppFullApp(
             AlertDialog(
                 onDismissRequest = { pendingSystemPackage = null },
                 modifier = Modifier.testTag("system_enable_dialog"),
-                title = { Text("为「${pendingSystemApp.label}」开启规则？") },
-                text = { Text("这会修改此系统应用的窗口显示，可能影响系统界面、输入法或相关功能。出现显示异常时，可关闭该应用的规则并重新启动该应用；部分系统组件可能需要重启设备才能恢复。") },
+                title = { Text("Enable rules for “${pendingSystemApp.label}”?") },
+                text = { Text("This changes how this system app displays its windows and may affect system UI, the keyboard, or related features. If display issues occur, turn off its rule and restart the app. Some system components may require a device restart to recover.") },
                 confirmButton = {
                     TextButton(onClick = {
                         pendingSystemPackage = null
                         onToggle(pendingSystemApp.packageName, true)
-                    }, modifier = Modifier.testTag("confirm_system_enable")) { Text("开启规则") }
+                    }, modifier = Modifier.testTag("confirm_system_enable")) { Text("Enable rule") }
                 },
                 dismissButton = {
                     TextButton(onClick = { pendingSystemPackage = null },
-                        modifier = Modifier.testTag("cancel_system_enable")) { Text("取消") }
+                        modifier = Modifier.testTag("cancel_system_enable")) { Text("Cancel") }
                 },
             )
         }
         if (resetDialog) {
             AlertDialog(
                 onDismissRequest = { resetDialog = false },
-                title = { Text("重置应用规则？") },
-                text = { Text("将关闭所有应用的全屏规则并恢复默认选项。重新启动受影响的应用后恢复原有显示；框架作用域不会被更改。") },
-                confirmButton = { TextButton(onClick = { resetDialog = false; onReset() }) { Text("重置规则") } },
-                dismissButton = { TextButton(onClick = { resetDialog = false }) { Text("取消") } },
+                title = { Text("Reset app rules?") },
+                text = { Text("This turns off fullscreen rules for all apps and restores default options. Restart affected apps to restore their original display. Framework scope will not change.") },
+                confirmButton = { TextButton(onClick = { resetDialog = false; onReset() }) { Text("Reset rules") } },
+                dismissButton = { TextButton(onClick = { resetDialog = false }) { Text("Cancel") } },
             )
         }
         }
@@ -215,7 +215,7 @@ private fun Header(onRefresh: () -> Unit) {
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f).testTag("app_title"))
         IconButton(onClick = onRefresh, modifier = Modifier.testTag("refresh")) {
-            Icon(AppIcons.Refresh, "刷新框架状态和应用列表", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(AppIcons.Refresh, "Refresh framework status and app list", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -225,20 +225,20 @@ private fun HomePage(state: UiState, onSettings: () -> Unit, onJoinCommunity: ()
     navigationHeight: androidx.compose.ui.unit.Dp) {
     val connected = state.status == FrameworkStatus.CONNECTED
     val statusText = when (state.status) {
-        FrameworkStatus.CHECKING -> "正在检测"
-        FrameworkStatus.CONNECTED -> "框架服务已连接"
-        FrameworkStatus.UNAVAILABLE -> "尚未连接框架"
-        FrameworkStatus.DISCONNECTED -> "框架连接已断开"
-        FrameworkStatus.UNSUPPORTED -> "框架暂不兼容"
+        FrameworkStatus.CHECKING -> "Checking"
+        FrameworkStatus.CONNECTED -> "Framework connected"
+        FrameworkStatus.UNAVAILABLE -> "Framework not connected"
+        FrameworkStatus.DISCONNECTED -> "Framework disconnected"
+        FrameworkStatus.UNSUPPORTED -> "Framework not supported"
     }
     LazyColumn(Modifier.fillMaxSize().testTag("home_page"),
         contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 16.dp,
             bottom = navigationHeight + 64.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("全屏显示", modifier = Modifier.testTag("home_title"),
+                Text("Fullscreen", modifier = Modifier.testTag("home_title"),
                     style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Text("按应用设置，保留你习惯的显示方式。", style = MaterialTheme.typography.bodyMedium,
+                Text("Configure display behavior separately for each app.", style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -256,15 +256,15 @@ private fun HomePage(state: UiState, onSettings: () -> Unit, onJoinCommunity: ()
                         Column(Modifier.weight(1f)) {
                             Text(statusText, modifier = Modifier.testTag("framework_status"),
                                 style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text(if (connected) "可以管理应用规则" else "请先启用模块并检查框架",
+                            Text(if (connected) "You can manage app rules" else "Enable the module and check the framework first",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    InfoLine("运行框架", state.frameworkName.ifBlank { "未获取" })
-                    InfoLine("框架版本", state.frameworkVersion.ifBlank { "未获取" })
-                    InfoLine("Xposed API", state.frameworkApi?.toString() ?: "未获取", "framework_api")
+                    InfoLine("Framework", state.frameworkName.ifBlank { "Unavailable" })
+                    InfoLine("Framework version", state.frameworkVersion.ifBlank { "Unavailable" })
+                    InfoLine("Xposed API", state.frameworkApi?.toString() ?: "Unavailable", "framework_api")
                     if (state.statusMessage.isNotBlank()) {
                         Text(state.statusMessage, style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -279,12 +279,12 @@ private fun HomePage(state: UiState, onSettings: () -> Unit, onJoinCommunity: ()
                     Icon(AppIcons.Expand, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("管理应用", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
+                        Text("Manage apps", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text("${state.enabledCount} 个应用已开启全屏规则", color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        Text("Fullscreen rules enabled for ${state.enabledCount} apps", color = MaterialTheme.colorScheme.onPrimaryContainer,
                             style = MaterialTheme.typography.bodyMedium)
                     }
-                    Icon(AppIcons.Arrow, "管理应用规则", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Icon(AppIcons.Arrow, "Manage app rules", tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
         }
@@ -293,11 +293,11 @@ private fun HomePage(state: UiState, onSettings: () -> Unit, onJoinCommunity: ()
             Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
                 Column(Modifier.fillMaxWidth().padding(20.dp).testTag("quick_start"),
                     verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("快速开始", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    TutorialStep("1", "启用模块", "在框架管理器中启用 SetAppFull pro。", "tutorial_enable")
-                    TutorialStep("2", "选择应用", "在本应用开启全屏并按提示授权；或直接在框架作用域中勾选应用。", "tutorial_select")
-                    TutorialStep("3", "查看效果", "按提示重新启动目标应用，检查全屏显示。点击应用可调整独立规则。", "tutorial_verify")
-                    Text("服务连接成功不代表每个目标应用已加载模块。",
+                    Text("Quick start", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    TutorialStep("1", "Enable the module", "Enable SetAppFull in your framework manager.", "tutorial_enable")
+                    TutorialStep("2", "Choose apps", "Enable fullscreen here and follow the prompts, or select apps directly in the framework scope.", "tutorial_select")
+                    TutorialStep("3", "Check the result", "Restart the target app as prompted and check fullscreen behavior. Tap an app to adjust its rules.", "tutorial_verify")
+                    Text("A connected framework does not guarantee that the module is loaded in every target app.",
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -310,7 +310,7 @@ private fun HomePage(state: UiState, onSettings: () -> Unit, onJoinCommunity: ()
                 Icon(AppIcons.Link, null)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("加入群聊", style = MaterialTheme.typography.titleMedium,
+                    Text("Join the community", style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold)
                     Text("Telegram · @tiaxcj", style = MaterialTheme.typography.bodySmall)
                 }
@@ -320,8 +320,8 @@ private fun HomePage(state: UiState, onSettings: () -> Unit, onJoinCommunity: ()
         item {
             Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
                 Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    InfoLine("模块版本", BuildConfig.VERSION_NAME, "module_version")
-                    InfoLine("Android 版本", "${Build.VERSION.RELEASE} · API ${Build.VERSION.SDK_INT}", "android_version")
+                    InfoLine("Module version", BuildConfig.VERSION_NAME, "module_version")
+                    InfoLine("Android version", "${Build.VERSION.RELEASE} · API ${Build.VERSION.SDK_INT}", "android_version")
                 }
             }
         }
@@ -373,9 +373,9 @@ private fun SettingsPage(
         contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 10.dp,
             bottom = navigationHeight + 64.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
-            Text("应用设置", Modifier.padding(bottom = 6.dp).testTag("settings_title"), style = MaterialTheme.typography.headlineMedium,
+            Text("App settings", Modifier.padding(bottom = 6.dp).testTag("settings_title"), style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold)
-            Text("开启全屏，按提示授权。点击应用调整独立规则。", style = MaterialTheme.typography.bodyMedium,
+            Text("Enable fullscreen and follow the prompts. Tap an app to adjust its rules.", style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (state.appListAccess == AppListAccess.DENIED || state.appListAccess == AppListAccess.ERROR) item {
@@ -383,9 +383,9 @@ private fun SettingsPage(
         }
         item {
             OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(top = 10.dp).testTag("app_search"),
-                placeholder = { Text("搜索应用名称或包名") }, leadingIcon = { Icon(AppIcons.Search, null) },
+                placeholder = { Text("Search by app name or package name") }, leadingIcon = { Icon(AppIcons.Search, null) },
                 trailingIcon = if (query.isNotEmpty()) {
-                    { IconButton(onClick = { query = "" }) { Icon(AppIcons.Close, "清空搜索") } }
+                    { IconButton(onClick = { query = "" }) { Icon(AppIcons.Close, "Clear search") } }
                 } else null,
                 shape = RoundedCornerShape(16.dp), singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -394,7 +394,7 @@ private fun SettingsPage(
         }
         item {
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("全部", "已开启", "未开启").forEachIndexed { index, label ->
+                listOf("All", "Enabled", "Disabled").forEachIndexed { index, label ->
                     FilterChip(filter == index, { filter = index }, { Text(label) },
                         modifier = Modifier.testTag("filter_$index"))
                 }
@@ -402,14 +402,14 @@ private fun SettingsPage(
             Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surface) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically) {
-                    Text("显示系统应用", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                    Text("Show system apps", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                     Switch(state.showSystem, onShowSystem, modifier = Modifier.testTag("show_system")
-                        .semantics { contentDescription = "显示系统应用" })
+                        .semantics { contentDescription = "Show system apps" })
                 }
             }
         }
         item {
-            Text("${apps.size} 个应用", Modifier.padding(top = 8.dp, bottom = 2.dp).testTag("app_count"),
+            Text("${apps.size} apps", Modifier.padding(top = 8.dp, bottom = 2.dp).testTag("app_count"),
                 style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (state.error != null) item { MessageCard(state.error, true) }
@@ -418,16 +418,16 @@ private fun SettingsPage(
                 verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(12.dp))
-                Text("正在加载应用…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Loading apps…", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         if (!state.loading && apps.isEmpty() && state.appListAccess != AppListAccess.DENIED && state.appListAccess != AppListAccess.ERROR) item {
             Column(Modifier.fillMaxWidth().padding(vertical = 40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(AppIcons.Search, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(12.dp))
-                Text(if (query.isBlank()) "没有符合筛选条件的应用" else "没有找到这个应用",
+                Text(if (query.isBlank()) "No apps match these filters" else "No matching app found",
                     style = MaterialTheme.typography.bodyLarge)
-                Text("试试其他关键词或筛选条件", Modifier.padding(top = 6.dp),
+                Text("Try another search or filter", Modifier.padding(top = 6.dp),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -440,7 +440,7 @@ private fun SettingsPage(
         item {
             Column(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 TextButton(onClick = onReset, modifier = Modifier.padding(top = 10.dp).testTag("reset_rules")) {
-                    Text("重置所有应用规则")
+                    Text("Reset all app rules")
                 }
             }
         }
@@ -454,20 +454,20 @@ private fun AppListAccessCard(state: UiState, onOpenAppSettings: () -> Unit, onR
         Column(Modifier.fillMaxWidth().padding(16.dp).testTag("app_list_access"),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(when (state.appListAccess) {
-                AppListAccess.CHECKING -> "正在检查应用列表访问"
-                AppListAccess.READY -> "应用列表可读取"
-                AppListAccess.DENIED -> "应用列表访问受限"
-                AppListAccess.ERROR -> "应用列表读取未完成"
+                AppListAccess.CHECKING -> "Checking app-list access"
+                AppListAccess.READY -> "App list available"
+                AppListAccess.DENIED -> "App-list access restricted"
+                AppListAccess.ERROR -> "Could not finish reading the app list"
             }, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Text(state.appListAccessMessage.ifBlank { "启动时自动检查读取应用列表所需的访问权限。" },
+            Text(state.appListAccessMessage.ifBlank { "Required app-list access is checked automatically at startup." },
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (state.appListAccess != AppListAccess.CHECKING) {
                 TextButton(onClick = onOpenAppSettings, modifier = Modifier.testTag("open_app_permissions")) {
-                    Text(if (ready) "列表不完整？检查系统权限" else "打开权限设置")
+                    Text(if (ready) "Incomplete list? Check system access" else "Open permission settings")
                 }
             }
             if (state.appListAccess == AppListAccess.DENIED || state.appListAccess == AppListAccess.ERROR) {
-                TextButton(onClick = onRefresh, modifier = Modifier.testTag("retry_app_access")) { Text("重新检查") }
+                TextButton(onClick = onRefresh, modifier = Modifier.testTag("retry_app_access")) { Text("Check again") }
             }
         }
     }
@@ -487,21 +487,21 @@ private fun ApplicationCard(app: AppRow, onToggle: (Boolean) -> Unit, onDetails:
                 Text(app.packageName, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val status = app.syncMessage.ifBlank {
-                    if (!app.enabled) "全屏控制已关闭"
+                    if (!app.enabled) "Fullscreen control is off"
                     else when (app.inScope) {
-                        true -> "已在作用域 · 效果待验证"
-                        false -> "需要加入框架作用域"
-                        null -> "作用域状态待确认"
+                        true -> "In scope · behavior needs verification"
+                        false -> "Add to framework scope"
+                        null -> "Scope status unconfirmed"
                     }
                 }
                 Text(status, Modifier.testTag("app_sync_${app.packageName}"),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (app.enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                if (app.allowScreenshot) Text("允许截屏（仅详情页可关闭）", style = MaterialTheme.typography.labelSmall,
+                if (app.allowScreenshot) Text("Screenshots allowed (change in app details)", style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary)
             }
             Switch(app.enabled, onToggle, modifier = Modifier.testTag("app_toggle_${app.packageName}")
-                .semantics { contentDescription = "${app.label}全屏规则" })
+                .semantics { contentDescription = "Fullscreen rules for ${app.label}" })
         }
     }
 }
@@ -527,50 +527,50 @@ private fun RulesDialog(
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(app.packageName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                RuleRow("开启全屏规则", "此应用独立生效", app.enabled) { onToggle(app.packageName, it) }
+                RuleRow("Enable fullscreen rule", "Applies to this app only", app.enabled) { onToggle(app.packageName, it) }
                 HorizontalDivider()
-                RuleRow("隐藏状态栏", "扩大顶部可用空间", app.flags and 2 != 0, app.enabled) {
+                RuleRow("Hide status bar", "Use more space at the top", app.flags and 2 != 0, app.enabled) {
                     onRuleChange(app.packageName, 2, it)
                 }
-                RuleRow("隐藏导航栏", "可通过边缘手势临时呼出", app.flags and 4 != 0, app.enabled) {
+                RuleRow("Hide navigation bar", "Temporarily reveal with an edge swipe", app.flags and 4 != 0, app.enabled) {
                     onRuleChange(app.packageName, 4, it)
                 }
-                RuleRow("延伸至挖孔区域", "允许内容绘制到屏幕缺口附近", app.flags and 8 != 0, app.enabled) {
+                RuleRow("Extend into the camera cutout area", "Allow content near the screen cutout", app.flags and 8 != 0, app.enabled) {
                     onRuleChange(app.packageName, 8, it)
                 }
                 if (app.packageName == "tv.danmaku.bili") {
-                    RuleRow("哔哩哔哩播放页优化", "修正播放页系统栏留白，保持视频原始比例",
+                    RuleRow("Bilibili playback layout fix", "Correct system-bar spacing on playback pages while preserving video aspect ratio",
                         app.flags and RuleCodec.DISABLE_BILIBILI_OPTIMIZATION == 0) {
                         onRuleChange(app.packageName, RuleCodec.DISABLE_BILIBILI_OPTIMIZATION, !it)
                     }
                 }
-                RuleRow("允许截屏", "仅当前应用；部分 DRM 或硬件保护内容仍可能无法截屏",
+                RuleRow("Allow screenshots", "This app only. DRM or hardware-protected content may still block screenshots.",
                     app.allowScreenshot, enabled = true) { onScreenshotChange(app.packageName, it) }
-                RuleRow("VPN 检测兼容", "仅当前应用；默认关闭，兼容常见 Android VPN 状态接口；不改变代理路由或 TLS 校验",
+                RuleRow("VPN detection compatibility", "This app only; off by default. Supports common Android VPN status APIs without changing proxy routing or TLS checks.",
                     app.networkEnvironmentCompat, enabled = true) {
                     onRuleChange(app.packageName, RuleCodec.COMPAT_NETWORK_ENVIRONMENT, it)
                 }
                 HorizontalDivider()
                 Text(when (app.inScope) {
-                    true -> "已加入框架作用域。规则变化后，请重新启动此应用并检查显示效果。"
-                    false -> "开启规则后会自动申请作用域授权；未完成时可重试或在框架中勾选。"
-                    null -> "暂时无法确认作用域，请检查框架连接与模块启用状态。"
+                    true -> "Added to framework scope. After changing rules, restart this app and check the result."
+                    false -> "Enabling a rule requests scope access automatically. Retry or select the app in the framework if needed."
+                    null -> "Could not confirm scope. Check the framework connection and module status."
                 }, style = MaterialTheme.typography.bodySmall)
                 if (app.inScope != true) OutlinedButton(onClick = { onScopeRequest(app.packageName) },
                     enabled = !app.scopeRequestPending,
                     modifier = Modifier.fillMaxWidth().testTag("request_scope")) {
-                    Text(if (app.scopeRequestPending) "等待框架处理" else "请求加入作用域")
+                    Text(if (app.scopeRequestPending) "Waiting for framework" else "Request scope access")
                 }
                 if (app.syncMessage.isNotBlank()) Text(app.syncMessage, Modifier.testTag("rule_sync_status"),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary)
-                Text("全屏不会改变应用自身的画面比例；应用内部留白可能仍然保留。",
+                Text("Fullscreen does not change an app’s aspect ratio; spacing inside the app may remain.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("允许截屏与全屏规则独立，仅能在此详情页手动开启。关闭后恢复原应用安全窗口行为。",
+                Text("Screenshot access is separate from fullscreen rules and can only be enabled here. Turning it off restores the app’s original secure-window behavior.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Done") } },
     )
 }
 
@@ -607,7 +607,7 @@ private fun SolidNavigation(
         .background(navigationColor, shape)
         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
         .padding(7.dp).selectableGroup(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        listOf("主页" to AppIcons.Home, "设置" to AppIcons.Settings).forEachIndexed { index, (label, icon) ->
+        listOf("Home" to AppIcons.Home, "Apps" to AppIcons.Settings).forEachIndexed { index, (label, icon) ->
             val active = selected == index
             val interactionSource = remember { MutableInteractionSource() }
             val pressed by interactionSource.collectIsPressedAsState()
